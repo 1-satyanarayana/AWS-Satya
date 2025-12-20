@@ -104,7 +104,7 @@ function openExam() {
 
 
     
-    window.location.href = "exam.html"; // connect your exam page here
+    window.location.href = "exam1.html"; // connect your exam page here
   } else {
 
 
@@ -125,4 +125,5 @@ function openExam() {
     alert("Invalid Code! Access Denied");
   }
 }
+
 
