@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Training & Placement Department - AWS Mock Test</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: #f1f5f9;
+        text-align: center;
+      }
+      header {
+        background: #334155;
+        padding: 15px;
+        font-size: 22px;
+        font-weight: bold;
+        color: #facc15;
+      }
+      #container {
+        max-width: 900px;
+        margin: 20px auto;
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+      }
+      #status {
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 2px solid #475569;
+        border-radius: 8px;
+      }
+      #time {
+        font-size: 26px;
+        margin: 15px 0;
+        font-weight: bold;
+        color: #38bdf8;
+      }
+      #overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.95);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 1000;
+        color: #fca5a5;
+        font-size: 22px;
+        text-align: center;
+      }
+      #overlay.show {
+        display: flex;
+      }
+      iframe {
+        width: 100%;
+        height: 600px;
+        border: none;
+        border-radius: 8px;
+        background: #fff;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #22c55e;
+        color: white;
+      }
+      button:hover {
+        background: #16a34a;
+      }
+      input {
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #475569;
+        margin-bottom: 10px;
+        width: 250px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header>Training & Placement Department</header>
+    <div id="container">
+      <div id="status">Enter your Roll Number and click <b>Start Exam</b>.</div>
+      <input type="text" id="rollInput" placeholder="Enter Roll Number" />
+      <div id="time">50:00</div>
+      <button id="startBtn">Start Exam</button>
+      <iframe id="quizFrame" src="" style="display: none"></iframe>
+    </div>
+
+    <div id="overlay">
+      <h2 id="overlayTitle">Exam Locked</h2>
+      <p id="overlayMsg">You left the quiz or time expired.</p>
+    </div>
+
+    <audio
+      id="beep"
+      src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+    ></audio>
+
+    <script>
+      const GOOGLE_FORM_URL =
+        "https://docs.google.com/forms/d/e/1FAIpQLSeVCuOLCi6YklUTbBM1dOTbhHTCDRQ1SY4xTfvXWGPLQpkCeg/viewform?usp=dialog";
+
+      // ✅ Allowed Roll Numbers
+      const ALLOWED_ROLLS = [
+        "22A21A5402",
+        "22A21A5403",
+        "22A21A5404",
+        "22A21A5415",
+        "22A21A5416",
+        "22A21A5418",
+        "22A21A5436",
+        "22A21A5437",
+        "22A21A5442",
+        "22A21A5447",
+        "22A21A5448",
+        "23A25A5403",
+        "23A25A5406",
+        "23A25A5408",
+        "22A21A6114",
+        "22A21A6120",
+        "22A21A6136",
+        "22A21A6157",
+        "22A21A6160",
+        "22A21A6193",
+        "22A21A6196",
+        "22A21A6183",
+        "22A21A6170",
+        "22A21A6187",
+        "22A21A6197",
+        "22A21A61A4",
+        "22A21A6174",
+        "22A21A61A8",
+        "22A21A61B3",
+        "23A25A6109",
+        "22A21A6191",
+        "22A21A6194",
+        "23A25A6114",
+        "22A21A0119",
+        "22A21A0124",
+        "22A21A0137",
+        "22A21A0115",
+        "22A21A0122",
+        "22A21A0108",
+        "22A21A0121",
+        "22A21A0501",
+        "22A21A0502",
+        "22A21A0507",
+        "22A21A0519",
+        "22A21A0520",
+        "22A21A0525",
+        "22A21A0527",
+        "22A21A0536",
+        "22A21A0544",
+        "22A21A0545",
+        "22A21A0555",
+        "22A21A0562",
+        "22A21A05A5",
+        "22A21A0586",
+        "22A21A05C2",
+        "22A21A05D2",
+        "22A21A6504",
+        "22A21A6507",
+        "22A21A6536",
+        "22A21A6540",
+        "22A21A6541",
+        "23A25A6504",
+        "22A21A05E8",
+        "22A21A05F8",
+        "22A21A05I3",
+        "22A21A4602",
+        "22A21A4601",
+        "22A21A4624",
+        "22A21A05K0",
+        "22A21A05M4",
+        "22A21A05K4",
+        "22A21A05M8",
+        "22A21A05K8",
+        "22A21A05N7",
+        "22A21A05M3",
+        "23A25A0521",
+        "22A21A05P6",
+        "22A21A4461",
+        "22A21A05Q6",
+        "22A21A05S1",
+        "22A21A05T9",
+        "22A21A05U0",
+        "22A21A05V5",
+        "23A25A0526",
+        "22A21A0444",
+        "23A25A0404",
+        "22A21A0483",
+        "23A25A0412",
+        "23A25A0416",
+        "22A21A0476",
+        "22A21A0462",
+        "22A21A04F1",
+        "23A25A0429",
+        "22A21A04I1",
+        "23A25A0430",
+        "22A21A04L2",
+        "22A21A0214",
+        "22A21A0240",
+        "22A21A1206",
+        "22A21A1222",
+        "AWS-1",
+        "AWS-2",
+        "AWS-3",
+        "AWS-4",
+        "AWS-5",
+        "AWS-6",
+        "AWS-7",
+        "AWS-8",
+        "AWS-9",
+        "AWS-10",
+        "AWS-11",
+        "AWS-12",
+        "AWS-13",
+        "AWS-14",
+        "AWS-15",
+        "AWS-16",
+        "AWS-17",
+        "AWS-18",
+        "AWS-19",
+        "AWS-20",
+      ];
+
+      let started = false,
+        endAt = 0;
+      const MAX_HIDDEN_GRACE_SECONDS = 10;
+      const MAX_ALLOWED_SWITCHES = 1;
+      const END_ON_EXCESS_SWITCH = true;
+      const REMINDER_ONE_MINUTE = true;
+
+      let hiddenStartedAt = null,
+        switchCount = 0;
+
+      const quizFrame = document.getElementById("quizFrame");
+      const statusEl = document.getElementById("status");
+      const timeEl = document.getElementById("time");
+      const overlay = document.getElementById("overlay");
+      const overlayTitle = document.getElementById("overlayTitle");
+      const overlayMsg = document.getElementById("overlayMsg");
+      const beep = document.getElementById("beep");
+      const rollInput = document.getElementById("rollInput");
+
+      // Disable right-click, copy, paste, etc.
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+      document.addEventListener("copy", (e) => e.preventDefault());
+      document.addEventListener("cut", (e) => e.preventDefault());
+      document.addEventListener("paste", (e) => e.preventDefault());
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          if (
+            (e.ctrlKey || e.metaKey) &&
+            ["c", "x", "v", "p", "s"].includes(e.key.toLowerCase())
+          )
+            e.preventDefault();
+          if (["F5", "F12", "Escape"].includes(e.key)) e.preventDefault();
+        },
+        true
+      );
+
+      // Prevent back/refresh
+      history.pushState(null, null, location.href);
+      window.onpopstate = function () {
+        history.go(1);
+      };
+      window.onbeforeunload = function () {
+        if (started) return "Exam in progress.";
+      };
+
+      // Fullscreen helpers
+      async function goFullscreen() {
+        try {
+          await (document.documentElement.requestFullscreen?.() ||
+            document.body.requestFullscreen?.());
+        } catch {}
+      }
+      function exitFullscreen() {
+        try {
+          document.exitFullscreen?.();
+        } catch {}
+      }
+
+      // Detect exit fullscreen
+      document.addEventListener("fullscreenchange", () => {
+        if (started && !document.fullscreenElement) {
+          lockExam(
+            "Exam Locked",
+            "You exited fullscreen (ESC). Test auto-submitted."
+          );
+        }
+      });
+
+      function isLocked() {
+        return overlay.classList.contains("show");
+      }
+
+      function onHidden() {
+        if (!started || isLocked()) return;
+        hiddenStartedAt = Date.now();
+      }
+      function onVisible() {
+        if (!started || isLocked()) return;
+        if (hiddenStartedAt) {
+          const hiddenFor = Math.floor((Date.now() - hiddenStartedAt) / 1000);
+          hiddenStartedAt = null;
+          if (hiddenFor > MAX_HIDDEN_GRACE_SECONDS) {
+            switchCount++;
+            flash(
+              `You left quiz for ${hiddenFor}s. (${switchCount}/${MAX_ALLOWED_SWITCHES})`,
+              true
+            );
+            if (END_ON_EXCESS_SWITCH && switchCount > MAX_ALLOWED_SWITCHES) {
+              lockExam("Exam Locked", "You switched tabs/apps too many times.");
+            }
+          }
+        }
+      }
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) onHidden();
+        else onVisible();
+      });
+      window.addEventListener("blur", onHidden);
+      window.addEventListener("focus", onVisible);
+
+      function format(ms) {
+        const total = Math.max(0, Math.floor(ms / 1000));
+        const m = Math.floor(total / 60)
+          .toString()
+          .padStart(2, "0");
+        const s = (total % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+      }
+      function flash(msg, danger = false) {
+        statusEl.textContent = msg;
+        statusEl.style.borderColor = danger ? "#7f1d1d" : "#334155";
+        statusEl.style.color = danger ? "#fecaca" : "#cbd5e1";
+        try {
+          beep.currentTime = 0;
+          beep.play().catch(() => {});
+        } catch {}
+        if (navigator.vibrate)
+          navigator.vibrate(danger ? [200, 100, 200] : 100);
+      }
+      function tick() {
+        if (!started) return;
+        const left = endAt - Date.now();
+        timeEl.textContent = format(left);
+        if (left <= 0) lockExam("Time Up", "Your exam time has ended.");
+        const minsLeft = Math.ceil(left / 60000);
+        if (REMINDER_ONE_MINUTE && minsLeft === 1 && left % 60000 < 1000) {
+          flash("Reminder: 1 minute left. Prepare to submit.");
+        }
+      }
+      setInterval(tick, 1000);
+
+      function lockExam(title, msg) {
+        overlayTitle.textContent = title;
+        overlayMsg.textContent = msg;
+        overlay.classList.add("show");
+        exitFullscreen();
+        try {
+          quizFrame.contentWindow.document.forms[0].submit();
+        } catch {}
+      }
+
+      document.getElementById("startBtn").addEventListener("click", () => {
+        const enteredRoll = rollInput.value.trim();
+
+        if (!ALLOWED_ROLLS.includes(enteredRoll)) {
+          flash("Invalid Roll Number. You cannot access the exam.", true);
+          return;
+        }
+
+        // ✅ check if this roll already used
+        if (localStorage.getItem("used_" + enteredRoll)) {
+          flash("This Roll Number has already attempted the exam.", true);
+          return;
+        }
+
+        // mark roll number as used (lock after 2 minutes)
+        localStorage.setItem("used_" + enteredRoll, Date.now());
+
+        started = true;
+        endAt = Date.now() + 50 * 60 * 1000; // exam 50 mins
+        quizFrame.src = GOOGLE_FORM_URL;
+        quizFrame.style.display = "block";
+        rollInput.style.display = "none";
+        document.getElementById("startBtn").style.display = "none";
+        flash("Exam started. Good luck!");
+        goFullscreen();
+
+        // after 2 minutes, block re-login
+        setTimeout(() => {
+          localStorage.setItem("used_" + enteredRoll, "locked");
+        }, 2 * 60 * 1000);
+      });
+    </script>
+  </body>
+</html>
