@@ -4,88 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AWS Qualified Assessment Test</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        font-family: "Segoe UI", Arial, sans-serif;
-      }
-      body {
-        margin: 0;
-        background: #f4f8ff;
-        color: #1a1a1a;
-      }
-      header {
-        background: linear-gradient(135deg, #003b8f, #005fd1);
-        color: #fff;
-        padding: 20px;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-      }
-      header h1 {
-        margin: 0;
-        font-size: 24px;
-      }
-      .top-btn {
-        float: right;
-        background: #ffd700;
-        color: #000;
-        border: none;
-        padding: 10px 16px;
-        font-weight: 600;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-      .container {
-        max-width: 1200px;
-        margin: auto;
-        padding: 20px;
-      }
-      .card {
-        background: #fff;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      }
-      h2 {
-        color: #003b8f;
-        margin-top: 0;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-      }
-      th,
-      td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: center;
-        font-size: 14px;
-      }
-      th {
-        background: #003b8f;
-        color: #fff;
-      }
-      ul {
-        padding-left: 20px;
-      }
-      footer {
-        background: #003b8f;
-        color: #fff;
-        text-align: center;
-        padding: 15px;
-      }
-      @media (max-width: 768px) {
-        header h1 {
-          font-size: 18px;
-        }
-        .top-btn {
-          padding: 8px 12px;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <header>
@@ -140,17 +59,6 @@
     <footer>
       Swarnandhra College of Engineering And Technology | Placement Department
     </footer>
-
-    <script>
-      function openExam() {
-        const code = prompt("Enter Exam Access Code");
-        if (code === "SWRN@2385") {
-          alert("Access Granted! Exam Portal Opening...");
-          window.location.href = "exam.html"; // connect your exam page here
-        } else {
-          alert("Invalid Code! Access Denied");
-        }
-      }
-    </script>
+    <script src="exam.js"></script>
   </body>
 </html>
