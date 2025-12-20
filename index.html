@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AWS Qualified Assessment Test</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: "Segoe UI", Arial, sans-serif;
+      }
+      body {
+        margin: 0;
+        background: #f4f8ff;
+        color: #1a1a1a;
+      }
+      header {
+        background: linear-gradient(135deg, #003b8f, #005fd1);
+        color: #fff;
+        padding: 20px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .top-btn {
+        float: right;
+        background: #ffd700;
+        color: #000;
+        border: none;
+        padding: 10px 16px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      }
+      h2 {
+        color: #003b8f;
+        margin-top: 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        font-size: 14px;
+      }
+      th {
+        background: #003b8f;
+        color: #fff;
+      }
+      ul {
+        padding-left: 20px;
+      }
+      footer {
+        background: #003b8f;
+        color: #fff;
+        text-align: center;
+        padding: 15px;
+      }
+      @media (max-width: 768px) {
+        header h1 {
+          font-size: 18px;
+        }
+        .top-btn {
+          padding: 8px 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>AWS Qualified Test</h1>
+      <button class="top-btn" onclick="openExam()">Start Exam</button>
+      <div style="clear: both"></div>
+    </header>
+
+    <div class="container">
+      <hi></hi>
+      <div class="card">
+        <h2>AWS Qualified Assessment Test</h2>
+        <p>
+          The AWS Qualified Assessment Test is designed to help students and
+          professionals evaluate their knowledge of Amazon Web Services (AWS)
+          fundamentals. This test follows the exam style of AWS Cloud
+          Practitioner / Associate-level certifications, including
+          scenario-based and multiple-choice questions.
+        </p>
+      </div>
+      <div class="card">
+        <h2>Purpose:</h2>
+        <ul>
+          <li>To assess understanding of AWS core concepts</li>
+          <li>To practice exam-style questions</li>
+          <li>
+            To build confidence before attempting official AWS certifications
+          </li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Topics Covered:</h2>
+        <ul>
+          <li>AWS Global Infrastructure</li>
+          <li>Core AWS Services (EC2, S3, RDS, Lambda, VPC, IAM, etc.)</li>
+          <li>Security, Identity, and Compliance</li>
+          <li>Billing, Pricing, and Support</li>
+          <li>Cloud Concepts & Best Practices</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Format:</h2>
+        <ul>
+          <li>Number of Questions: 50</li>
+          <li>Type: Multiple-choice / Multiple-response</li>
+          <li>Time Limit: 50 minutes</li>
+          <li>Passing Criteria: 70%</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer>
+      Swarnandhra College of Engineering And Technology | Placement Department
+    </footer>
+
+    <script>
+      function openExam() {
+        const code = prompt("Enter Exam Access Code");
+        if (code === "SWRN@2385") {
+          alert("Access Granted! Exam Portal Opening...");
+          window.location.href = "exam.html"; // connect your exam page here
+        } else {
+          alert("Invalid Code! Access Denied");
+        }
+      }
+    </script>
+  </body>
+</html>

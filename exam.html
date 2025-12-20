@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Training & Placement Department - AWS Mock Test</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: #f1f5f9;
+        text-align: center;
+      }
+      header {
+        background: #334155;
+        padding: 15px;
+        font-size: 22px;
+        font-weight: bold;
+        color: #facc15;
+      }
+      #container {
+        max-width: 900px;
+        margin: 20px auto;
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+      }
+      #status {
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 2px solid #475569;
+        border-radius: 8px;
+      }
+      #time {
+        font-size: 26px;
+        margin: 15px 0;
+        font-weight: bold;
+        color: #38bdf8;
+      }
+      #overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.95);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 1000;
+        color: #fca5a5;
+        font-size: 22px;
+        text-align: center;
+      }
+      #overlay.show {
+        display: flex;
+      }
+      iframe {
+        width: 100%;
+        height: 600px;
+        border: none;
+        border-radius: 8px;
+        background: #fff;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #22c55e;
+        color: white;
+      }
+      button:hover {
+        background: #16a34a;
+      }
+    </style>
+  </head>
+  <body>
+    <header>Training & Placement Department</header>
+    <div id="container">
+      <div id="status">Click <b>Start Exam</b> when ready.</div>
+      <div id="time">50:00</div>
+      <button id="startBtn">Start Exam</button>
+      <iframe id="quizFrame" src="" style="display: none"></iframe>
+    </div>
+
+    <div id="overlay">
+      <h2 id="overlayTitle">Exam Locked</h2>
+      <p id="overlayMsg">You left the quiz or time expired.</p>
+    </div>
+
+    <audio
+      id="beep"
+      src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+    ></audio>
+
+    <script>
+      const GOOGLE_FORM_URL =
+        "https://docs.google.com/forms/d/e/1FAIpQLSeVCuOLCi6YklUTbBM1dOTbhHTCDRQ1SY4xTfvXWGPLQpkCeg/viewform?usp=dialog";
+
+      let started = false,
+        endAt = 0,
+        closeAt = 0; // new: form closing time
+
+      const MAX_HIDDEN_GRACE_SECONDS = 10;
+      const MAX_ALLOWED_SWITCHES = 1;
+      const END_ON_EXCESS_SWITCH = true;
+      const REMINDER_MINUTES_BEFORE = 10;
+      const REMINDER_ONE_MINUTE = true;
+
+      let hiddenStartedAt = null,
+        switchCount = 0;
+
+      const quizFrame = document.getElementById("quizFrame");
+      const statusEl = document.getElementById("status");
+      const timeEl = document.getElementById("time");
+      const overlay = document.getElementById("overlay");
+      const overlayTitle = document.getElementById("overlayTitle");
+      const overlayMsg = document.getElementById("overlayMsg");
+      const beep = document.getElementById("beep");
+
+      // Disable right-click, copy, paste, etc.
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+      document.addEventListener("copy", (e) => e.preventDefault());
+      document.addEventListener("cut", (e) => e.preventDefault());
+      document.addEventListener("paste", (e) => e.preventDefault());
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          if (
+            (e.ctrlKey || e.metaKey) &&
+            ["c", "x", "v", "p", "s"].includes(e.key.toLowerCase())
+          )
+            e.preventDefault();
+          if (["F5", "F12", "Escape"].includes(e.key)) e.preventDefault();
+        },
+        true
+      );
+
+      // Prevent back/refresh
+      history.pushState(null, null, location.href);
+      window.onpopstate = function () {
+        history.go(1);
+      };
+      window.onbeforeunload = function () {
+        if (started) return "Exam in progress.";
+      };
+
+      // Fullscreen helpers
+      async function goFullscreen() {
+        try {
+          await (document.documentElement.requestFullscreen?.() ||
+            document.body.requestFullscreen?.());
+        } catch {}
+      }
+      function exitFullscreen() {
+        try {
+          document.exitFullscreen?.();
+        } catch {}
+      }
+
+      // Detect exit fullscreen
+      document.addEventListener("fullscreenchange", () => {
+        if (started && !document.fullscreenElement) {
+          lockExam(
+            "Exam Locked",
+            "You exited fullscreen (ESC). Test auto-submitted."
+          );
+        }
+      });
+
+      function isLocked() {
+        return overlay.classList.contains("show");
+      }
+
+      function onHidden() {
+        if (!started || isLocked()) return;
+        hiddenStartedAt = Date.now();
+      }
+      function onVisible() {
+        if (!started || isLocked()) return;
+        if (hiddenStartedAt) {
+          const hiddenFor = Math.floor((Date.now() - hiddenStartedAt) / 1000);
+          hiddenStartedAt = null;
+          if (hiddenFor > MAX_HIDDEN_GRACE_SECONDS) {
+            switchCount++;
+            flash(
+              `You left quiz for ${hiddenFor}s. (${switchCount}/${MAX_ALLOWED_SWITCHES})`,
+              true
+            );
+            if (END_ON_EXCESS_SWITCH && switchCount > MAX_ALLOWED_SWITCHES) {
+              lockExam("Exam Locked", "You switched tabs/apps too many times.");
+            }
+          }
+        }
+      }
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) onHidden();
+        else onVisible();
+      });
+      window.addEventListener("blur", onHidden);
+      window.addEventListener("focus", onVisible);
+
+      function format(ms) {
+        const total = Math.max(0, Math.floor(ms / 1000));
+        const m = Math.floor(total / 60)
+          .toString()
+          .padStart(2, "0");
+        const s = (total % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+      }
+      function flash(msg, danger = false) {
+        statusEl.textContent = msg;
+        statusEl.style.borderColor = danger ? "#7f1d1d" : "#334155";
+        statusEl.style.color = danger ? "#fecaca" : "#cbd5e1";
+        try {
+          beep.currentTime = 0;
+          beep.play().catch(() => {});
+        } catch {}
+        if (navigator.vibrate)
+          navigator.vibrate(danger ? [200, 100, 200] : 100);
+      }
+      function tick() {
+        if (!started) return;
+        const left = endAt - Date.now();
+        timeEl.textContent = format(left);
+
+        // Auto close form 10 minutes before exam ends
+        if (Date.now() >= closeAt && !isLocked()) {
+          lockExam(
+            "Form Closed",
+            "The exam link closed 10 minutes before end time."
+          );
+        }
+
+        if (left <= 0) lockExam("Time Up", "Your exam time has ended.");
+        const minsLeft = Math.ceil(left / 60000);
+        if (
+          minsLeft === REMINDER_MINUTES_BEFORE &&
+          Math.floor((left % 60000) / 1000) === 59
+        )
+          flash(`Reminder: ${REMINDER_MINUTES_BEFORE} min left.`);
+        if (
+          REMINDER_ONE_MINUTE &&
+          minsLeft === 1 &&
+          Math.floor((left % 60000) / 1000) === 0
+        )
+          flash("Reminder: 1 minute left. Prepare to submit.");
+      }
+      setInterval(tick, 1000);
+
+      function lockExam(title, msg) {
+        overlayTitle.textContent = title;
+        overlayMsg.textContent = msg;
+        overlay.classList.add("show");
+        exitFullscreen();
+        try {
+          quizFrame.contentWindow.document.forms[0].submit();
+        } catch {}
+      }
+
+      document.getElementById("startBtn").addEventListener("click", () => {
+        started = true;
+        endAt = Date.now() + 50 * 60 * 1000; // 50 min exam
+        closeAt = endAt - 10 * 60 * 1000; // close 10 min before
+        quizFrame.src = GOOGLE_FORM_URL;
+        quizFrame.style.display = "block";
+        document.getElementById("startBtn").style.display = "none";
+        flash("Exam started. Good luck!");
+        goFullscreen();
+      });
+    </script>
+  </body>
+</html>
