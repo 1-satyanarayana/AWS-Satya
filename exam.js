@@ -57,7 +57,7 @@ function openExam() {
 
 
   
-  if (code === "SWRN@2385") {
+  if (code === "SWRN2385") {
 
 
 
@@ -104,7 +104,7 @@ function openExam() {
 
 
     
-    window.location.href = "exam1.html"; // connect your exam page here
+    window.location.href = "exam.html"; // connect your exam page here
   } else {
 
 
@@ -125,5 +125,6 @@ function openExam() {
     alert("Invalid Code! Access Denied");
   }
 }
+
 
 
