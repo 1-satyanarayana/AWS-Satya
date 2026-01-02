@@ -57,7 +57,7 @@ function openExam() {
 
 
   
-  if (code === "SWRN2385") {
+  if (code === "S") {
 
 
 
@@ -125,6 +125,7 @@ function openExam() {
     alert("Invalid Code! Access Denied");
   }
 }
+
 
 
 
